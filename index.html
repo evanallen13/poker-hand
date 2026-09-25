@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Five Card Deal</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(ellipse at top, #20694f, #082c25); color: #fff; font-family: system-ui, sans-serif; }
+    main { width: min(900px, 100%); padding: 40px 16px; text-align: center; }
+    .eyebrow { color: #e7c983; text-transform: uppercase; letter-spacing: .25em; font-size: 12px; }
+    h1 { font-family: Georgia, serif; font-size: clamp(32px, 6vw, 52px); margin: 16px 0 10px; font-weight: normal; }
+    p { color: #bfd5cc; }
+    #hand { display: flex; justify-content: center; gap: clamp(6px, 2vw, 18px); margin: 40px 0; }
+    .card { position: relative; width: 145px; aspect-ratio: 5 / 7; background: #fffdf7; border-radius: clamp(6px, 1.5vw, 12px); box-shadow: 0 10px 24px #0005; color: #172523; flex: 1; max-width: 145px; display: grid; place-items: center; }
+    .card.red { color: #c3353d; }
+    .corner { position: absolute; top: 7%; left: 10%; display: flex; flex-direction: column; align-items: center; line-height: 1; font-family: Georgia, serif; font-size: clamp(14px, 3.5vw, 28px); font-weight: bold; gap: 3px; }
+    .corner.bottom { inset: auto 10% 7% auto; transform: rotate(180deg); }
+    .suit { font-size: clamp(28px, 7vw, 64px); }
+    button { border: 1px solid #f1d492; border-radius: 999px; background: #f1d492; color: #163b2d; padding: 14px 30px; font: 600 16px system-ui, sans-serif; cursor: pointer; }
+    button:hover { background: #ffe7b3; }
+    button:focus-visible { outline: 3px solid white; outline-offset: 5px; }
+    .note { font-size: 13px; margin-top: 22px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">A fresh hand every time</div>
+    <h1>Five Card Deal</h1>
+    <p>Reload the page to shuffle the deck.</p>
+    <div id="hand" role="list" aria-label="Your five cards" aria-live="polite"></div>
+    <button id="deal" type="button">Deal again ↻</button>
+    <p class="note">52 cards · 5 dealt · No duplicates</p>
+    <noscript>Please enable JavaScript to deal your cards.</noscript>
+  </main>
+  <script>
+    const suits = [
+      { symbol: '♠', name: 'spades', red: false },
+      { symbol: '♥', name: 'hearts', red: true },
+      { symbol: '♦', name: 'diamonds', red: true },
+      { symbol: '♣', name: 'clubs', red: false }
+    ];
+    const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    const names = { A: 'Ace', J: 'Jack', Q: 'Queen', K: 'King' };
+
+    function deal() {
+      const deck = suits.flatMap(suit => ranks.map(rank => ({ rank, ...suit })));
+
+      // Fisher–Yates shuffle, then draw five cards without replacement.
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+
+      document.getElementById('hand').innerHTML = deck.slice(0, 5).map(card => `
+        <div class="card ${card.red ? 'red' : ''}" role="listitem"
+             aria-label="${names[card.rank] || card.rank} of ${card.name}">
+          <span class="corner" aria-hidden="true"><span>${card.rank}</span><span>${card.symbol}</span></span>
+          <span class="suit" aria-hidden="true">${card.symbol}</span>
+          <span class="corner bottom" aria-hidden="true"><span>${card.rank}</span><span>${card.symbol}</span></span>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('deal').addEventListener('click', deal);
+    deal();
+  </script>
+</body>
+</html>
